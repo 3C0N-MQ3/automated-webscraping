@@ -1,0 +1,19 @@
+steps:
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'functions'
+      - 'deploy'
+      - 'first_cloud_function'
+      - '--entry-point'
+      - 'main'
+      - '--runtime'
+      - 'python39'
+      - '--trigger-http'
+      - '--source'
+      - '.'
+      - '--region'
+      - 'us-central1'
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: '540s'
