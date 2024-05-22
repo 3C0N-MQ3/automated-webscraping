@@ -3,7 +3,7 @@ steps:
     args:
       - 'functions'
       - 'deploy'
-      - 'first_cloud_function'
+      - 'main'
       - '--entry-point'
       - 'main'
       - '--runtime'
