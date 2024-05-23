@@ -1,0 +1,7 @@
+functions-framework
+bs4
+flask
+pandas
+requests
+session_info
+toolz
