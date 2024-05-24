@@ -5,3 +5,4 @@ pandas
 requests
 session_info
 toolz
+google-cloud-storage
