@@ -7,12 +7,38 @@ from bs4 import BeautifulSoup
 from toolz import pipe
 from datetime import datetime
 from typing import Dict
+from google.cloud import storage
 
 @functions_framework.http
 def main(request: flask.Request) -> str:
+    """
+    Entry point for the web scraping Google Cloud Function.
+
+    This function orchestrates the web scraping process for Old School RuneScape gold prices,
+    saves the data to a Google Cloud Storage bucket, and returns a summary message.
+
+    Parameters
+    ----------
+    request : flask.Request
+        The HTTP request object that triggered this function.
+
+    Returns
+    -------
+    str
+        A summary message detailing the names of the DataFrames and their respective date ranges.
+    """
     data = webscrapper()
     save_to_bucket(data)
-    return 'All done!'
+    
+    message = "Webscraping Old School RuneScape Gold Prices\n"
+    message += "="*40 + "\n"
+    for timeframe, df in data.items():
+        start_date = df.index.min().strftime('%Y-%m-%d %H:%M:%S')
+        end_date = df.index.max().strftime('%Y-%m-%d %H:%M:%S')
+        message += f"{timeframe}: From {start_date} to {end_date}\n"
+    message += "="*40
+    
+    return message
 
 
 def webscrapper() -> Dict[str, pd.DataFrame]:
@@ -99,4 +125,22 @@ def webscrapper() -> Dict[str, pd.DataFrame]:
 
 
 def save_to_bucket(data: Dict[str, pd.DataFrame]) -> None:
-    pass
+    """
+    Save the data to a Google Cloud Storage bucket as CSV files.
+
+    Parameters
+    ----------
+    data : dict of pandas.DataFrame
+        The data to save, with each key corresponding to a CSV file name.
+    """
+    # Nombre del bucket de Google Cloud Storage
+    bucket_name = 'main_webscraping'
+    
+    # Inicializar el cliente de almacenamiento
+    client = storage.Client()
+    bucket = client.get_bucket(bucket_name)
+    
+    # Guardar cada DataFrame en el bucket
+    for timeframe, df in data.items():
+        blob = bucket.blob(f'{timeframe}.csv')
+        blob.upload_from_string(df.to_csv(), 'text/csv')
